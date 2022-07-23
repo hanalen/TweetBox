@@ -19,10 +19,13 @@ import java.util.zip.ZipInputStream;
 @RestController
 @RequestMapping("uploader")
 public class UploaderController {
-    @Autowired
-    private UploaderService uploaderService;
+    private final UploaderService uploaderService;
 
-    @GetMapping("/unzip2")
+    public UploaderController(UploaderService uploaderService) {
+        this.uploaderService = uploaderService;
+    }
+
+    @GetMapping("/unzip")
     public String unZipFile2(@RequestParam String userId, @RequestParam String fileName) {
         return this.uploaderService.UnZip(userId, fileName);
     }
