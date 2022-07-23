@@ -1,5 +1,6 @@
 package com.tweetbox.uploader.controllers;
 
+import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import com.tweetbox.uploader.services.UploaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -26,12 +27,12 @@ public class UploaderController {
     }
 
     @GetMapping("/unzip")
-    public String unZipFile2(@RequestParam String userId, @RequestParam String fileName) {
-        return this.uploaderService.UnZip(userId, fileName);
+    public String unZipFile2(RequestUnZipDto requestUnZipDto) {
+        return this.uploaderService.UnZip(requestUnZipDto);
     }
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestPart MultipartFile file) throws FileNotFoundException, IOException {
+    public String uploadFile(@RequestPart MultipartFile file) {
         return this.uploaderService.Upload(file);
 
     }

@@ -1,5 +1,6 @@
 package com.tweetbox.uploader.services;
 
+import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,9 +31,9 @@ public class UploaderService {
         return "ok";
     }
 
-    public String UnZip(String userId, String fileName) {
-        String pathUnzipFolder = this.pathUploadFolder + "/" + userId;
-        Path zipFilePath = Paths.get(this.pathUploadFolder + "/" + fileName);
+    public String UnZip(RequestUnZipDto requestUnZipDto) {
+        String pathUnzipFolder = this.pathUploadFolder + "/" + requestUnZipDto.getUserId();
+        Path zipFilePath = Paths.get(this.pathUploadFolder + "/" + requestUnZipDto.getFileName());
 
         try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath.toFile()))) {
             Files.createDirectories(Paths.get(pathUnzipFolder));
