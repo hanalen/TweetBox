@@ -16,7 +16,7 @@ public class Progress {
     public int id;
 
     @Column(nullable = true)
-    public Long user_id;
+    public Long userId;
     @Column(nullable = true)
     public ProgressStatus progressStatus;
 }
