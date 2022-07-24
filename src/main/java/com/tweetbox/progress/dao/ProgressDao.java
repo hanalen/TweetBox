@@ -8,4 +8,6 @@ public interface ProgressDao {
     Progress updateProgress(Progress progress);
 
     Progress findByUserId(Long userId);
+
+    Progress findById(Long id);
 }

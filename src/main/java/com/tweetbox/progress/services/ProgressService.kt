@@ -31,8 +31,7 @@ class ProgressService(private var progressDaoImpl: ProgressDaoImpl) {
     }
 
     fun updateProgress(progressId: Long, progressStatus: ProgressStatus): ResponseProgressDto {
-        var progress = Progress();
-        progress.id = progressId;
+        var progress = this.progressDaoImpl.findById(progressId)
         progress.progressStatus = progressStatus;
 
         var result = this.progressDaoImpl.updateProgress(progress);
