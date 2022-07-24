@@ -1,6 +1,7 @@
 package com.tweetbox.progress.controller;
 
 import com.tweetbox.progress.dtos.GetProgressDto;
+import com.tweetbox.progress.entities.Progress;
 import com.tweetbox.progress.services.ProgressService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,7 @@ public class ProgressController {
     }
 
     @GetMapping("")
-    public String GetProgress(GetProgressDto getProgressDto) {
-        return this.progressService.Test2();
+    public Progress GetProgress(GetProgressDto getProgressDto) {
+        return this.progressService.findProgressByUserId(getProgressDto.getUserId());
     }
 }
