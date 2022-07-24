@@ -1,5 +1,6 @@
 package com.tweetbox.uploader.controllers;
 
+import com.tweetbox.progress.dao.ResponseProgressDto;
 import com.tweetbox.uploader.dtos.RequestCorrectFile;
 import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import com.tweetbox.uploader.services.UploaderService;
@@ -27,8 +28,7 @@ public class UploaderController {
     }
 
     @PostMapping("/upload")
-    public String uploadFile(@RequestPart MultipartFile file) {
-        return this.uploaderService.Upload(file);
-
+    public ResponseProgressDto uploadFile(@RequestPart MultipartFile file, @RequestParam Long userId) {
+        return this.uploaderService.Upload(file, userId);
     }
 }
