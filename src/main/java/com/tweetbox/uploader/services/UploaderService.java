@@ -64,7 +64,9 @@ public class UploaderService {
     }
 
     @SneakyThrows
-    public String UnZip(RequestUnZipDto requestUnZipDto) {
+    public ResponseProgressDto UnZip(RequestUnZipDto requestUnZipDto) {
+        this.progressService.updateProgress(requestUnZipDto.getProgressId(), ProgressStatus.UNZIP_START);
+
         String pathUnzipFolder = this.pathUploadFolder + "/" + requestUnZipDto.getUserId();
         Path zipFilePath = Paths.get(this.pathUploadFolder + "/" + requestUnZipDto.getFileName());
 
@@ -87,6 +89,6 @@ public class UploaderService {
         } catch (Exception e) {
             throw e;
         }
-        return "OK";
+        return this.progressService.updateProgress(requestUnZipDto.getProgressId(), ProgressStatus.UNZIP_END);
     }
 }

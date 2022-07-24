@@ -23,7 +23,7 @@ public class UploaderController {
     }
 
     @GetMapping("/unzip")
-    public String unZipFile2(RequestUnZipDto requestUnZipDto) {
+    public ResponseProgressDto unZipFile2(RequestUnZipDto requestUnZipDto) {
         return this.uploaderService.UnZip(requestUnZipDto);
     }
 

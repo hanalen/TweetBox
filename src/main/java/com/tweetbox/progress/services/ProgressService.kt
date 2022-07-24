@@ -10,14 +10,21 @@ import org.springframework.stereotype.Service
 @Service
 class ProgressService(private var progressDaoImpl: ProgressDaoImpl) {
     fun findProgressByUserId(userId: Long): Progress {
-//        this.progressRepository.findOne()
         return this.progressDaoImpl.findByUserId(userId);
     }
 
-    fun createProgress(userId: Long): Progress {
+    fun findProgressById(progressId: Long): ResponseProgressDto {
+        var progress = this.progressDaoImpl.findById(progressId);
+
+        return ResponseProgressDto(progress);
+    }
+
+    fun createProgress(userId: Long): ResponseProgressDto {
         var progress = Progress();
         progress.progressStatus = ProgressStatus.NONE;
-        return this.progressDaoImpl.saveProgress(progress);
+        var result = this.progressDaoImpl.saveProgress(progress);
+
+        return ResponseProgressDto(result);
     }
 
     fun createProgress(userId: Long, progressStatus: ProgressStatus): ResponseProgressDto {
@@ -25,9 +32,8 @@ class ProgressService(private var progressDaoImpl: ProgressDaoImpl) {
         progress.userId = userId;
         progress.progressStatus = progressStatus;
         var result = this.progressDaoImpl.saveProgress(progress);
-        var responseProgressDto = ResponseProgressDto(result);
 
-        return responseProgressDto;
+        return ResponseProgressDto(result);
     }
 
     fun updateProgress(progressId: Long, progressStatus: ProgressStatus): ResponseProgressDto {
