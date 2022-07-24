@@ -13,7 +13,7 @@ import javax.persistence.Id;
 public class Progress {
     @Id
     @GeneratedValue
-    public int id;
+    public Long id;
 
     @Column(nullable = true)
     public Long userId;

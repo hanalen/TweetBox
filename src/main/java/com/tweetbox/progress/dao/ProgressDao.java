@@ -5,5 +5,7 @@ import com.tweetbox.progress.entities.Progress;
 public interface ProgressDao {
     Progress saveProgress(Progress progress);
 
+    Progress updateProgress(Progress progress);
+
     Progress findByUserId(Long userId);
 }

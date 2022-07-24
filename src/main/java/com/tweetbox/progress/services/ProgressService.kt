@@ -1,6 +1,7 @@
 package com.tweetbox.progress.services
 
 import com.tweetbox.progress.dao.ProgressDaoImpl
+import com.tweetbox.progress.dao.ResponseProgressDto
 import com.tweetbox.progress.entities.Progress
 import com.tweetbox.progress.entities.ProgressStatus
 import org.springframework.stereotype.Component
@@ -13,11 +14,31 @@ class ProgressService(private var progressDaoImpl: ProgressDaoImpl) {
         return this.progressDaoImpl.findByUserId(userId);
     }
 
-    fun Test2(): String {
+    fun createProgress(userId: Long): Progress {
         var progress = Progress();
-        progress.userId = 10;
         progress.progressStatus = ProgressStatus.NONE;
-        this.progressDaoImpl.saveProgress(progress);
-        return "ab";
+        return this.progressDaoImpl.saveProgress(progress);
     }
+
+    fun createProgress(userId: Long, progressStatus: ProgressStatus): ResponseProgressDto {
+        var progress = Progress();
+        progress.userId = userId;
+        progress.progressStatus = progressStatus;
+        var result = this.progressDaoImpl.saveProgress(progress);
+        var responseProgressDto = ResponseProgressDto(result);
+
+        return responseProgressDto;
+    }
+
+    fun updateProgress(progressId: Long, progressStatus: ProgressStatus): ResponseProgressDto {
+        var progress = Progress();
+        progress.id = progressId;
+        progress.progressStatus = progressStatus;
+
+        var result = this.progressDaoImpl.updateProgress(progress);
+        var responseProgressDto = ResponseProgressDto(result);
+
+        return responseProgressDto;
+    }
+
 }

@@ -3,7 +3,9 @@ package com.tweetbox.progress.dao;
 import com.tweetbox.progress.entities.Progress;
 import com.tweetbox.progress.repositories.ProgressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class ProgressDaoImpl implements ProgressDao {
@@ -16,8 +18,16 @@ public class ProgressDaoImpl implements ProgressDao {
 
     @Override
     public Progress saveProgress(Progress progress) {
-        this.progressRepository.save(progress);
-        return progress;
+        try {
+            return this.progressRepository.save(progress);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    @Override
+    public Progress updateProgress(Progress progress) {
+        return this.progressRepository.save(progress);
     }
 
     @Override
