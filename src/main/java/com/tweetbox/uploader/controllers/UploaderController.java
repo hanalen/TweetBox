@@ -17,18 +17,17 @@ public class UploaderController {
     }
 
     @GetMapping("/correct-file")
-    public String FileCorrect(RequestCorrectFile requestFileCorrect) {
-        String msg = this.uploaderService.CorrectFile(requestFileCorrect);
-        return msg;
+    public ResponseProgressDto FileCorrect(RequestCorrectFile requestFileCorrect) {
+        return this.uploaderService.CorrectFile(requestFileCorrect);
     }
 
     @GetMapping("/unzip")
-    public ResponseProgressDto unZipFile2(RequestUnZipDto requestUnZipDto) {
+    public ResponseProgressDto UnZipFile(RequestUnZipDto requestUnZipDto) {
         return this.uploaderService.UnZip(requestUnZipDto);
     }
 
     @PostMapping("/upload")
-    public ResponseProgressDto uploadFile(@RequestPart MultipartFile file, @RequestParam Long userId) {
+    public ResponseProgressDto UploadFile(@RequestPart MultipartFile file, @RequestParam Long userId) {
         return this.uploaderService.Upload(file, userId);
     }
 }

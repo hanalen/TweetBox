@@ -35,16 +35,16 @@ public class UploaderService {
     }
 
     @SneakyThrows
-    public String CorrectFile(RequestCorrectFile requestCorrectFile) {
-        Path filePath = Paths.get(pathUploadFolder + "/" + requestCorrectFile.getFileName());
+    public ResponseProgressDto CorrectFile(RequestCorrectFile requestCorrectFile) {
         File file = new File(pathUploadFolder + "/" + requestCorrectFile.getFileName());
         if (file.exists() == false) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 파일");
         } else if (file.length() != requestCorrectFile.getFileSize()) {
+            this.progressService.updateProgress(requestCorrectFile.getProgressId(), ProgressStatus.FAIL);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "파일 사이즈가 다릅니다.");
         }
 
-        return "OK";
+        return this.progressService.updateProgress(requestCorrectFile.getProgressId(), ProgressStatus.FILE_CORRECT);
     }
 
     @SneakyThrows

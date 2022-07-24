@@ -6,6 +6,7 @@ public enum ProgressStatus {
     UPLOAD_END,
     UNZIP_START,
     UNZIP_END,
+    FILE_CORRECT,
     READ_START,
     READ_END,
     FAIL

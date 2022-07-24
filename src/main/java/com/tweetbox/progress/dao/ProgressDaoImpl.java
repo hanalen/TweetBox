@@ -40,7 +40,7 @@ public class ProgressDaoImpl implements ProgressDao {
     @Override
     public Progress findById(Long id) {
         Optional<Progress> progress = this.progressRepository.findById(id);
-        if (progress == null || progress.get() == null) {
+        if (progress == null || progress.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "진행 상태를 찾을 수 없습니다.");
         }
 
