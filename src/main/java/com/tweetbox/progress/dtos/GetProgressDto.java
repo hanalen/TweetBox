@@ -1,13 +1,13 @@
 package com.tweetbox.progress.dtos;
 
 public class GetProgressDto {
-    private String userId;
+    private Long userId;
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 }
