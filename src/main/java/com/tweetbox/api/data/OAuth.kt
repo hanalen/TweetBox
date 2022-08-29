@@ -1,27 +1,79 @@
 package com.tweetbox.api.data
 
 import java.lang.System.currentTimeMillis
+import java.nio.charset.StandardCharsets
+import java.util.*
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 import kotlin.math.ceil
 import kotlin.math.floor
 
-class OAuth {
-    val oauth_version: String = "1.0";
-    var oauth_consumer_key: String = "";
-    var oauth_signature_method: String = "HMAC-SHA1";
-    var oauth_timestamp: String = "";
-    var oauth_nonce: String = "";
-    var oauth_consumer_secret: String = "";
-    var oauth_signature: String = "";
-    var oauth_token: String = ""; //사용자 공개키, 매번 입력 받는다
-    var user_secret_key: String = ""; //사용자 비밀키, 매번 입력 받는다
 
-    inline fun <reified T:Any> T.getProperties(): List<String> = T::class.java.getProperties()
-        .map { it.getDelegate(this) }
-        .filter(T::class::isInstance)
-        .map(T::class::safeCast)
-        .filterNotNull()
-        .distinct()
-        .toList()
+class OAuth(var mapValues: SortedMap<String, String>) {
+    init {
+        mapValues.put("oauth_version", "1.0");
+        mapValues.put("oauth_consumer_key", "");
+        mapValues.put("oauth_signature_method", "HMAC-SHA1");
+        mapValues.put("oauth_timestamp", "");
+        mapValues.put("oauth_nonce", "");
+        mapValues.put("oauth_consumer_secret", "");
+        mapValues.put("oauth_signature", "");
+        mapValues.put("oauth_token", "");//사용자 공개키, 매번 입력 받는다
+        mapValues.put("user_secret_key", "");//사용자 비밀키, 매번 입력 받는다
+
+    }
+
+    var user_secret_key: String?
+        get() {
+            return this.mapValues.get("user_secret_key");
+        }
+        set(value) {
+            this.mapValues["user_secret_key"] = value;
+        }
+
+    var oauth_token: String?
+        get() {
+            return this.mapValues.get("oauth_token");
+        }
+        set(value) {
+            this.mapValues["oauth_token"] = value;
+        }
+
+    var oauth_consumer_secret: String?
+        get() {
+            return this.mapValues.get("oauth_consumer_secret");
+        }
+        set(value) {
+            this.mapValues["oauth_consumer_secret"] = value;
+        }
+
+    var oauth_timestamp: String?
+        get() {
+            return this.mapValues.get("oauth_timestamp");
+        }
+        set(value) {
+            this.mapValues["oauth_timestamp"] = value;
+        }
+
+    var oauth_nonce: String?
+        get() {
+            return this.mapValues.get("oauth_nonce");
+        }
+        set(value) {
+            this.mapValues["oauth_nonce"] = value;
+        }
+
+    var oauth_signature: String?
+        get() {
+            return this.mapValues.get("oauth_signature");
+        }
+        set(value) {
+            this.mapValues["oauth_signature"] = value;
+        }
+
+    fun encodeURIComponent(value: String): String? {
+        return java.net.URLEncoder.encode(value, "utf-8")
+    }
 
     fun setKey(publicKey: String, secretKey: String) {
         this.user_secret_key = secretKey;
@@ -61,37 +113,31 @@ class OAuth {
         } else {
             str += encodeURIComponent(text);
         }
-        str = this.UrlEncode(str);
+        str = this.urlEncode(str);
         return str;
     }
 
-    fun <T> createBody(params: APIRequest<T>?): String {
+    fun createBody(params: APIRequest?): String {
         if (params == null || params.data != null) return "";
 
         var str = "";
 
-        Object.entries(params.data) //params 오브젝트의 파라메터 이름, 값을 얻는 코드
-            .sort()
-            .forEach(([key, value]) => {
-                if (value || value === 0) str += `${key}=${this.CalcParamUri(value)}&`;
-            });
-        str += '&';
+        for (item in mapValues) {
+            str += "$item.key=${this.calcParamUri(item.value)}&";
+        }
         return str.substring(0, str.length - 1); //마지막& 지우기
     }
 
-    fun <T> getUrl(params: APIRequest<T>?, url: String, isQueryParam: Boolean): String {
+    fun getUrl(params: APIRequest?, url: String, isQueryParam: Boolean): String {
         if (!isQueryParam) {
             return url;
         } else {
             if (params?.data != null) {
                 var str = "$url?";
-                Object.entries(params.data) //params 오브젝트의 파라메터 이름, 값을 얻는 코드
-                    .sort()
-                    .forEach(([key, value]) => {
-                        // console.log('key: ' + key + 'value: ' + value);
-                        if ((value || value === 0) && this.isCalcKey(key))
-                            str += `${key}=${encodeURIComponent(value)}&`;
-                    });
+                for (item in mapValues) {
+                    if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key))
+                        str += "${item.key}=${encodeURIComponent(item.value)}&";
+                }
                 return str.substring(0, str.length - 1); //마지막& 지우기
             } else {
                 return url;
@@ -101,19 +147,16 @@ class OAuth {
     }
 
 
-    fun <T> GetHeader(params: APIRequest<T>?, method: String, url: String): String {
-        this.calcSignature(params?.data, method, url);
-
-        var parseObj = Object.assign(this, params?.data);
+    fun getHeader(params: APIRequest?, method: String, url: String): String {
+        this.calcSignature(params, method, url);
 
         var str = "OAuth ";
 
-        Object.entries(parseObj) //params 오브젝트의 파라메터 이름, 값을 얻는 코드
-            .forEach(([key, value]) => {
-                if ((value || value === 0) && this.isCalcKey(key)) {
-                    str += `${key}="${this.CalcParamUri(value)}",`;
-                }
-            });
+        for (item in mapValues) {
+            if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key)) {
+                str += "${item.key}=${this.calcParamUri(item.value)},"
+            }
+        }
         str = str.substring(0, str.length - 1); //마지막, 지우기
         return str;
     }
@@ -129,40 +172,68 @@ class OAuth {
 
     fun stringToBase64(str: String): String {
         var arr = ArrayList<Int>();
+        var str = "";
         for (i in 0..str.length - 1) {
-            arr.add(str[i].code.toByte().toInt());
+//            arr.add(str[i].code.toByte().toInt());
+            str += str[i].code.toByte().toInt().toString();
         }
-        return btoa(String.fromCharCode.apply(null, arr));
+        return btoa(str);
     }
-    fun <T> calcSignature(params: APIRequest<T>?, method: String, url: String) {
+
+    fun btoa(value: String): String {
+        val bytes: ByteArray = Base64.getDecoder().decode(value)
+        val s = String(bytes, StandardCharsets.UTF_8)
+        return s;
+    }
+
+    fun calcSignature(params: APIRequest?, method: String, url: String) {
         this.createTimeStamp();
         this.createOAuthNonce();
 
-        var parseObj = Object.assign(this, params);
-
         var str = "";
-        Object.entries(parseObj) //params 오브젝트의 파라메터 이름, 값을 얻는 코드
-            .sort()
-            .forEach(([key, value]) => {
-                if ((value || value === 0) && this.isCalcKey(key)) {
-                    str += `${key}=${this.CalcParamUri(value)}&`;
-                }
-            });
+
+        for (item in mapValues) {
+            if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key)) {
+                str += "${item.key}=${this.calcParamUri(item.value)}&";
+            }
+        }
 
         str = str.substring(0, str.length - 1); //마지막& 지우기
         var baseStr = this.calcBaseString(method, url, str);
-        var signKey ="";
-        if(this.user_secret_key.isNullOrEmpty()){
-          signKey="$oauth_consumer_secret&$user_secret_key";
-        }else{
-            signKey="$oauth_consumer_secret&";
+        var signKey = "";
+        if (this.user_secret_key.isNullOrEmpty()) {
+            signKey = "$oauth_consumer_secret&$user_secret_key";
+        } else {
+            signKey = "$oauth_consumer_secret&";
         }
-        var hash = CryptoJS.HmacSHA1(baseStr, signKey);
-        var strHash = CryptoJS.enc.Base64.stringify(hash);
-        this.oauth_signature = strHash;
+        var hash = hmacSha1(baseStr, signKey);
+//        var strHash = CryptoJS.enc.Base64.stringify(hash);
+        this.oauth_signature = hash;
     }
 
     fun calcBaseString(method: String, url: String, paramStr: String): String {
         return method + '&' + this.calcParamUri(url) + '&' + this.calcParamUri(paramStr);
+    }
+
+    private fun hmacSha1(value: String, key: String): String? {
+        val type = "HmacSHA1"
+        val secret = SecretKeySpec(key.toByteArray(), type)
+        val mac = Mac.getInstance(type)
+        mac.init(secret)
+        val bytes = mac.doFinal(value.toByteArray())
+        return bytesToHex(bytes)
+    }
+
+    private val hexArray = "0123456789abcdef".toCharArray()
+
+    private fun bytesToHex(bytes: ByteArray): String? {
+        val hexChars = CharArray(bytes.size * 2)
+        var v: Int
+        for (j in bytes.indices) {
+            v = bytes[j].toInt() and 0xFF
+            hexChars[j * 2] = hexArray[v ushr 4]
+            hexChars[j * 2 + 1] = hexArray[v and 0x0F]
+        }
+        return String(hexChars)
     }
 }
