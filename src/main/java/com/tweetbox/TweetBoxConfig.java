@@ -13,11 +13,18 @@ public class TweetBoxConfig {
   @Value("${consumerSecretKey}")
   private String consumerSecretKey;
 
+  @Value("${callbackUrl}")
+  private String callbackUrl;
+
   public String getConsumerKey() {
     return this.consumerKey;
   }
 
   public String getConsumerSecretKey() {
     return this.consumerSecretKey;
+  }
+
+  public String getCallbackUrl() {
+    return callbackUrl;
   }
 }

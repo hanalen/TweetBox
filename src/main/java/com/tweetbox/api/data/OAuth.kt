@@ -23,7 +23,7 @@ class OAuth(var mapValues: SortedMap<String, String>, var tweetBoxConfig: TweetB
         mapValues.put("oauth_signature", "");
         mapValues.put("oauth_token", "");//사용자 공개키, 매번 입력 받는다
         mapValues.put("user_secret_key", "");//사용자 비밀키, 매번 입력 받는다
-        mapValues.put("oauth_callback", "oob");
+        mapValues.put("oauth_callback", tweetBoxConfig.callbackUrl);
 
     }
 
