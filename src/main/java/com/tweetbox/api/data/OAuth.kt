@@ -1,6 +1,9 @@
 package com.tweetbox.api.data
 
+import com.tweetbox.TweetBoxConfig
+import com.tweetbox.progress.services.ProgressService
 import java.lang.System.currentTimeMillis
+import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.Mac
@@ -9,17 +12,18 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 
-class OAuth(var mapValues: SortedMap<String, String>) {
+class OAuth(var mapValues: SortedMap<String, String>, var tweetBoxConfig: TweetBoxConfig) {
     init {
         mapValues.put("oauth_version", "1.0");
-        mapValues.put("oauth_consumer_key", "");
+        mapValues.put("oauth_consumer_key", tweetBoxConfig.consumerKey);
         mapValues.put("oauth_signature_method", "HMAC-SHA1");
         mapValues.put("oauth_timestamp", "");
         mapValues.put("oauth_nonce", "");
-        mapValues.put("oauth_consumer_secret", "");
+        mapValues.put("oauth_consumer_secret", tweetBoxConfig.consumerSecretKey);
         mapValues.put("oauth_signature", "");
         mapValues.put("oauth_token", "");//사용자 공개키, 매번 입력 받는다
         mapValues.put("user_secret_key", "");//사용자 비밀키, 매번 입력 받는다
+        mapValues.put("oauth_callback", "oob");
 
     }
 
@@ -105,10 +109,15 @@ class OAuth(var mapValues: SortedMap<String, String>) {
         if (text == null) return str;
         if (text.length > limit) {
             //media등은 길어서 나눠서 해야됨
-            var loops = ceil((text.length / limit) as Double) as Int;
+            var loops = ceil((text.length.toDouble() / limit.toDouble())).toInt();
             var i = 0;
             for (i in 0..loops - 1) {
-                str += encodeURIComponent(text.substring(100 * i, (i + 1) * limit));
+                var startIndex = 100 * i;
+                var endIndex = (i + 1) * limit;
+                if (endIndex >= text.length) {
+                    endIndex = text.length;
+                }
+                str += encodeURIComponent(text.substring(startIndex, endIndex));
             }
         } else {
             str += encodeURIComponent(text);
@@ -135,7 +144,7 @@ class OAuth(var mapValues: SortedMap<String, String>) {
             if (params?.data != null) {
                 var str = "$url?";
                 for (item in mapValues) {
-                    if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key))
+                    if (item.value.isNotEmpty() && this.isCalcKey(item.key))
                         str += "${item.key}=${encodeURIComponent(item.value)}&";
                 }
                 return str.substring(0, str.length - 1); //마지막& 지우기
@@ -153,7 +162,7 @@ class OAuth(var mapValues: SortedMap<String, String>) {
         var str = "OAuth ";
 
         for (item in mapValues) {
-            if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key)) {
+            if (item.value.isNotEmpty() && this.isCalcKey(item.key)) {
                 str += "${item.key}=${this.calcParamUri(item.value)},"
             }
         }
@@ -162,28 +171,17 @@ class OAuth(var mapValues: SortedMap<String, String>) {
     }
 
     fun createTimeStamp() {
-        this.oauth_timestamp = floor(currentTimeMillis() / 1000 as Double).toString(); //timestamp용 계산
+        var a = currentTimeMillis().toBigDecimal();
+        var b = 1000.toBigDecimal();
+        this.oauth_timestamp = (a / b).toString();
     }
 
     fun createOAuthNonce() {
-        var tick = currentTimeMillis() * 10000 + 62135596800;
-        this.oauth_nonce = this.stringToBase64(tick.toString());
-    }
-
-    fun stringToBase64(str: String): String {
-        var arr = ArrayList<Int>();
-        var str = "";
-        for (i in 0..str.length - 1) {
-//            arr.add(str[i].code.toByte().toInt());
-            str += str[i].code.toByte().toInt().toString();
-        }
-        return btoa(str);
-    }
-
-    fun btoa(value: String): String {
-        val bytes: ByteArray = Base64.getDecoder().decode(value)
-        val s = String(bytes, StandardCharsets.UTF_8)
-        return s;
+        var tick = currentTimeMillis();
+        val encoder: Base64.Encoder = Base64.getEncoder()
+        val encoded: String = encoder.encodeToString(tick.toString().toByteArray());
+        this.oauth_nonce = encoded;
+//        this.oauth_nonce = "MTY2MjQ2MTA4Mjc0NzY4MDA=";
     }
 
     fun calcSignature(params: APIRequest?, method: String, url: String) {
@@ -193,7 +191,7 @@ class OAuth(var mapValues: SortedMap<String, String>) {
         var str = "";
 
         for (item in mapValues) {
-            if ((item.value.isNotEmpty() || item.value != "0") && this.isCalcKey(item.key)) {
+            if (item.value.isNotEmpty() && this.isCalcKey(item.key)) {
                 str += "${item.key}=${this.calcParamUri(item.value)}&";
             }
         }
@@ -201,27 +199,29 @@ class OAuth(var mapValues: SortedMap<String, String>) {
         str = str.substring(0, str.length - 1); //마지막& 지우기
         var baseStr = this.calcBaseString(method, url, str);
         var signKey = "";
-        if (this.user_secret_key.isNullOrEmpty()) {
+        if (!this.user_secret_key.isNullOrEmpty()) {
             signKey = "$oauth_consumer_secret&$user_secret_key";
         } else {
             signKey = "$oauth_consumer_secret&";
         }
         var hash = hmacSha1(baseStr, signKey);
-//        var strHash = CryptoJS.enc.Base64.stringify(hash);
-        this.oauth_signature = hash;
+        val encoder: Base64.Encoder = Base64.getEncoder()
+        val encoded: String = encoder.encodeToString(hash);
+        this.oauth_signature = encoded;
     }
 
     fun calcBaseString(method: String, url: String, paramStr: String): String {
         return method + '&' + this.calcParamUri(url) + '&' + this.calcParamUri(paramStr);
     }
 
-    private fun hmacSha1(value: String, key: String): String? {
+    private fun hmacSha1(value: String, key: String): ByteArray {
         val type = "HmacSHA1"
         val secret = SecretKeySpec(key.toByteArray(), type)
         val mac = Mac.getInstance(type)
         mac.init(secret)
         val bytes = mac.doFinal(value.toByteArray())
-        return bytesToHex(bytes)
+        return bytes;
+//        return bytesToHex(bytes)
     }
 
     private val hexArray = "0123456789abcdef".toCharArray()
