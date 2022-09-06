@@ -1,15 +1,12 @@
 package com.tweetbox.api.data
 
 import com.tweetbox.TweetBoxConfig
-import com.tweetbox.progress.services.ProgressService
+import com.tweetbox.api.dtos.APIRequest
 import java.lang.System.currentTimeMillis
-import java.math.BigDecimal
-import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.ceil
-import kotlin.math.floor
 
 
 class OAuth(var mapValues: SortedMap<String, String>, var tweetBoxConfig: TweetBoxConfig) {
