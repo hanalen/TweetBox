@@ -1,5 +1,6 @@
 package com.tweetbox.account.controllers;
 
+import com.tweetbox.account.dtos.ReqSignInDto;
 import com.tweetbox.account.services.AccountService;
 import com.tweetbox.api.data.OAuthRes;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,5 +24,9 @@ public class AccountController {
     return this.accountService.SignUp();
   }
 
+  @GetMapping("sign-in")
+  public OAuthRes SignIn(ReqSignInDto reqSignInDto) {
+    return this.accountService.SignIn(reqSignInDto);
+  }
 
 }
