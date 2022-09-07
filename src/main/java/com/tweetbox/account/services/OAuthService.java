@@ -4,20 +4,17 @@ package com.tweetbox.account.services;
 //import org.springframework.security.*;
 
 import com.tweetbox.account.dtos.ReqSignInDto;
-import com.tweetbox.api.dtos.APIRequest;
 import com.tweetbox.api.data.OAuthRes;
 import com.tweetbox.api.dtos.ReqAccessToken;
 import com.tweetbox.api.dtos.ReqOAuthToken;
 import com.tweetbox.api.services.APIService;
 import org.springframework.stereotype.Service;
 
-import java.util.TreeMap;
-
 @Service
-public class AccountService {
+public class OAuthService {
   private final APIService apiService;
 
-  public AccountService(APIService apiService) {
+  public OAuthService(APIService apiService) {
     this.apiService = apiService;
   }
 
@@ -26,7 +23,7 @@ public class AccountService {
     return this.apiService.RequestOAuth(request);
   }
 
-  public OAuthRes SignIn(ReqSignInDto reqSignInDto) {
+  public OAuthRes CallBack(ReqSignInDto reqSignInDto) {
     ReqAccessToken reqAccessToken = new ReqAccessToken();
     reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
     reqAccessToken.setOauth_verifier(reqSignInDto.getOauth_verifier());
@@ -36,5 +33,4 @@ public class AccountService {
 
     return this.apiService.RequestOAuth(reqAccessToken);
   }
-
 }
