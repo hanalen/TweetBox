@@ -30,7 +30,10 @@ public class AccountService {
     ReqAccessToken reqAccessToken = new ReqAccessToken();
     reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
     reqAccessToken.setOauth_verifier(reqSignInDto.getOauth_verifier());
-    
+    reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
+    reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
+    reqAccessToken.setUser_secret_key(reqAccessToken.getUser_secret_key());
+
     return this.apiService.RequestOAuth(reqAccessToken);
   }
 

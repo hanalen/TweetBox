@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("account")
@@ -20,12 +21,22 @@ public class AccountController {
 
 
   @GetMapping("sign-up")
-  public OAuthRes SignUp() {
-    return this.accountService.SignUp();
+  public OAuthRes SignUp(HttpServletRequest request) {
+    OAuthRes ret = this.accountService.SignUp();
+    HttpSession session = request.getSession();
+
+    session.setAttribute("oauth_token", ret.getOauth_token());
+    session.setAttribute("oauth_token_secret", ret.getOauth_token_secret());
+
+    return ret;
   }
 
   @GetMapping("sign-in")
-  public OAuthRes SignIn(ReqSignInDto reqSignInDto) {
+  public OAuthRes SignIn(HttpServletRequest request, ReqSignInDto reqSignInDto) {
+    HttpSession session = request.getSession();
+    reqSignInDto.setOauth_token_secret(session.getAttribute("oauth_token_secret").toString());
+    reqSignInDto.setOauth_token(session.getAttribute("oauth_token").toString());
+
     return this.accountService.SignIn(reqSignInDto);
   }
 

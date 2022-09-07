@@ -14,12 +14,4 @@ public class ReqAccessToken extends APIRequest {
   public void setOauth_verifier(String value) {
     super.getData().put("oauth_verifier", value);
   }
-
-  public String getOauth_token() {
-    return super.getData().get("oauth_token");
-  }
-
-  public void setOauth_token(String value) {
-    super.getData().put("oauth_token", value);
-  }
 }

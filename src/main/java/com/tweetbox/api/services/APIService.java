@@ -35,8 +35,8 @@ public class APIService {
   @SneakyThrows
   public OAuthRes RequestOAuth(APIRequest apiRequest) {
     String urlEndpoint = apiRequest.getUrl();
-    OAuth oauth = new OAuth(new TreeMap<>(), tweetBoxConfig);
-    oauth.setKey("", "");
+    OAuth oauth = new OAuth(apiRequest.getData(), tweetBoxConfig);
+    oauth.setKey(apiRequest.getOauth_token(), apiRequest.getUser_secret_key());
     String body = apiRequest.getData().size() > 0 ? oauth.createBody(apiRequest) : "";
     String reqUrl = oauth.getUrl(apiRequest, urlEndpoint, false);
 

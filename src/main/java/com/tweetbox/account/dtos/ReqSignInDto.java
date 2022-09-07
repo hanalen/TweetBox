@@ -2,6 +2,7 @@ package com.tweetbox.account.dtos;
 
 public class ReqSignInDto {
   private String oauth_token;
+  private String oauth_token_secret;
   private String oauth_verifier;
 
   public String getOauth_verifier() {
@@ -18,5 +19,13 @@ public class ReqSignInDto {
 
   public void setOauth_token(String oauth_token) {
     this.oauth_token = oauth_token;
+  }
+
+  public String getOauth_token_secret() {
+    return oauth_token_secret;
+  }
+
+  public void setOauth_token_secret(String oauth_token_secret) {
+    this.oauth_token_secret = oauth_token_secret;
   }
 }
