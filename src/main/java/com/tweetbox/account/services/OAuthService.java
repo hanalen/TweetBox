@@ -25,11 +25,12 @@ public class OAuthService {
 
   public OAuthRes CallBack(ReqSignInDto reqSignInDto) {
     ReqAccessToken reqAccessToken = new ReqAccessToken();
-    reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
+    String oauthToken = reqSignInDto.getOauth_token();
+    String secretToken = reqSignInDto.getOauth_token_secret();
     reqAccessToken.setOauth_verifier(reqSignInDto.getOauth_verifier());
+
     reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
-    reqAccessToken.setOauth_token(reqSignInDto.getOauth_token());
-    reqAccessToken.setUser_secret_key(reqAccessToken.getUser_secret_key());
+    reqAccessToken.setUser_secret_key(reqSignInDto.getOauth_token_secret());
 
     return this.apiService.RequestOAuth(reqAccessToken);
   }

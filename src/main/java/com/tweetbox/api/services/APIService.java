@@ -36,6 +36,8 @@ public class APIService {
   public OAuthRes RequestOAuth(APIRequest apiRequest) {
     String urlEndpoint = apiRequest.getUrl();
     OAuth oauth = new OAuth(apiRequest.getData(), tweetBoxConfig);
+    String oauthToken = apiRequest.getOauth_token();
+    String secret = apiRequest.getUser_secret_key();
     oauth.setKey(apiRequest.getOauth_token(), apiRequest.getUser_secret_key());
     String body = apiRequest.getData().size() > 0 ? oauth.createBody(apiRequest) : "";
     String reqUrl = oauth.getUrl(apiRequest, urlEndpoint, false);
