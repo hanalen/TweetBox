@@ -65,17 +65,17 @@ public class APIService {
       OAuthRes oAuthRes = new OAuthRes();
       for (int i = 0; i < splitResponse.length; i++) {
         String[] strs = splitResponse[i].split("=");
-        if (strs[0] == "oauth_callback_confirmed") {
+        if (strs[0].equals("oauth_callback_confirmed")) {
           oAuthRes.setOauth_callback_confirmed(strs[1] == "true");
-        } else if (strs[0] == "oauth_token") {
+        } else if (strs[0].equals("oauth_token")) {
           oAuthRes.setOauth_token(strs[1]);
-        } else if (strs[0] == "oauth_token_secret") {
+        } else if (strs[0].equals(("oauth_token_secret"))) {
           oAuthRes.setOauth_token_secret(strs[1]);
-        } else if (strs[0] == "screen_name") {
+        } else if (strs[0].equals("screen_name")) {
           oAuthRes.setScreen_name(strs[1]);
-        } else if (strs[0] == "name") {
+        } else if (strs[0].equals("name")) {
           oAuthRes.setName(strs[1]);
-        } else if (strs[0] == "user_id") {
+        } else if (strs[0].equals("user_id")) {
           oAuthRes.setUser_id(strs[1]);
         }
       }
