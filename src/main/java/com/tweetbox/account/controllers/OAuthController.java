@@ -5,6 +5,8 @@ import com.tweetbox.account.services.OAuthService;
 import com.tweetbox.api.data.OAuthRes;
 import lombok.SneakyThrows;
 import org.apache.ibatis.javassist.tools.web.BadHttpRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +55,10 @@ public class OAuthController {
     reqSignInDto.setOauth_token(oauth_token.toString());
 
 
-    return this.oauthService.CallBack(reqSignInDto);
+    OAuthRes ret = this.oauthService.CallBack(reqSignInDto);
+    session.setAttribute("OAuth", ret);
+
+    return ret;
   }
 
 }
