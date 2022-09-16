@@ -4,9 +4,11 @@ import com.tweetbox.logger.services.LoggerService;
 import com.tweetbox.progress.dtos.ResponseProgressDto;
 import com.tweetbox.progress.entities.ProgressStatus;
 import com.tweetbox.progress.services.ProgressService;
+import com.tweetbox.rabbitmq.services.RabbitMQService;
 import com.tweetbox.uploader.dtos.RequestCorrectFile;
 import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import lombok.SneakyThrows;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,10 +29,12 @@ public class UploaderService {
   private final String pathUploadFolder = "e:\\Upload";
   private final LoggerService loggerService;
   private final ProgressService progressService;
+  private final RabbitMQService rabbitMQService;
 
-  public UploaderService(LoggerService loggerService, ProgressService progressService) {
+  public UploaderService(LoggerService loggerService, ProgressService progressService, RabbitMQService rabbitMQService) {
     this.loggerService = loggerService;
     this.progressService = progressService;
+    this.rabbitMQService = rabbitMQService;
   }
 
   @SneakyThrows
@@ -49,8 +53,12 @@ public class UploaderService {
   @SneakyThrows
   public ResponseProgressDto Upload(MultipartFile file, Long userId) {
     ResponseProgressDto progress = this.progressService.createProgress(10, ProgressStatus.UPLOAD_START);
+    String orgFileName = file.getOriginalFilename();
+    String extName = orgFileName.substring(orgFileName.lastIndexOf("."), orgFileName.length());
+    String newFileName = userId.toString() + extName;
+
     try {
-      File newFile = new File(this.pathUploadFolder, file.getOriginalFilename());
+      File newFile = new File(this.pathUploadFolder, newFileName);
       newFile.mkdirs();
       file.transferTo(newFile);
     } catch (IOException e) {
@@ -59,15 +67,21 @@ public class UploaderService {
       throw e;
     }
 
-    return this.progressService.updateProgress(progress.id, ProgressStatus.UPLOAD_END);
+    ResponseProgressDto ret = this.progressService.updateProgress(progress.id, ProgressStatus.UPLOAD_END);
+    RequestUnZipDto dto = new RequestUnZipDto(userId, newFileName, ret.getId());
+    this.rabbitMQService.SendUnzip(dto);
+
+    return ret;
   }
 
   @SneakyThrows
-  public ResponseProgressDto UnZip(RequestUnZipDto requestUnZipDto) {
-    this.progressService.updateProgress(requestUnZipDto.getProgressId(), ProgressStatus.UNZIP_START);
+  @RabbitListener(queues = "tweetbox.queue.unzip")
+  public void UnZip(RequestUnZipDto requestUnZipDto) {
+    this.loggerService.Info("Received queue unzip user id: {}", requestUnZipDto.userId().toString());
+    this.progressService.updateProgress(requestUnZipDto.progressId(), ProgressStatus.UNZIP_START);
 
-    String pathUnzipFolder = this.pathUploadFolder + "/" + requestUnZipDto.getUserId();
-    Path zipFilePath = Paths.get(this.pathUploadFolder + "/" + requestUnZipDto.getFileName());
+    String pathUnzipFolder = this.pathUploadFolder + "/" + requestUnZipDto.userId();
+    Path zipFilePath = Paths.get(this.pathUploadFolder + "/" + requestUnZipDto.fileName());
 
     try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath.toFile()))) {
       Files.createDirectories(Paths.get(pathUnzipFolder));
@@ -88,6 +102,6 @@ public class UploaderService {
     } catch (Exception e) {
       throw e;
     }
-    return this.progressService.updateProgress(requestUnZipDto.getProgressId(), ProgressStatus.UNZIP_END);
+    this.progressService.updateProgress(requestUnZipDto.progressId(), ProgressStatus.UNZIP_END);
   }
 }
