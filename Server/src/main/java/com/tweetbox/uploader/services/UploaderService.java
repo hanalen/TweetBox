@@ -8,6 +8,7 @@ import com.tweetbox.rabbitmq.services.RabbitMQService;
 import com.tweetbox.uploader.dtos.RequestCorrectFile;
 import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import lombok.SneakyThrows;
+import org.apache.ibatis.javassist.tools.web.BadHttpRequest;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,9 @@ public class UploaderService {
     ResponseProgressDto progress = this.progressService.createProgress(10, ProgressStatus.UPLOAD_START);
     String orgFileName = file.getOriginalFilename();
     String extName = orgFileName.substring(orgFileName.lastIndexOf("."), orgFileName.length());
+    if(extName.equals(".zip") == false) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "압축파일만 전송할 수 있습니다.");
+    }
     String newFileName = userId.toString() + extName;
 
     try {
