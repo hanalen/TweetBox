@@ -1,5 +1,6 @@
 package com.tweetbox.reader.services
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.tweetbox.logger.services.LoggerService
 import com.tweetbox.progress.dtos.ResponseProgressDto
@@ -7,12 +8,12 @@ import com.tweetbox.progress.entities.ProgressStatus
 import com.tweetbox.progress.services.ProgressService
 import com.tweetbox.reader.dtos.RequestReadArchive
 import com.tweetbox.tweet.data.Tweet
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.io.File
 import java.io.FileInputStream
-import com.fasterxml.jackson.core.type.TypeReference
 
 @Service
 class ReaderService(private var progressService: ProgressService, private var loggerService: LoggerService) {
@@ -22,16 +23,11 @@ class ReaderService(private var progressService: ProgressService, private var lo
   private val normalTypeOffset = 33;
 
   enum class ArchiveType {
-    NORMAL,
-    MEDIA
+    NORMAL_OLD,
+    MEDIA,
   }
 
   private fun getArchiveType(requestReadArchive: RequestReadArchive): ArchiveType {
-    if (requestReadArchive.fileName.indexOf(".") > -1) {
-      requestReadArchive.fileName =
-        requestReadArchive.fileName.substring(0, requestReadArchive.fileName.indexOf("."));
-    }
-
     var fileName = requestReadArchive.fileName;
     var folderFile = File(pathUploadFolder + fileName);
     var normalTypeFile =
@@ -39,7 +35,7 @@ class ReaderService(private var progressService: ProgressService, private var lo
     var mediaTypeFile = folderFile.listFiles().find { file -> file.name == "tweet.js" };
 
     if (normalTypeFile != null) {
-      return ArchiveType.NORMAL;
+      return ArchiveType.NORMAL_OLD;
     } else if (mediaTypeFile != null) {
       return ArchiveType.MEDIA;
     } else {
@@ -98,14 +94,16 @@ class ReaderService(private var progressService: ProgressService, private var lo
     return tweetArrayList;
   }
 
-  fun readTweetArchive(requestReadArchive: RequestReadArchive): ResponseProgressDto {
+  @RabbitListener(queues = ["tweetbox.queue.read-archive"])
+  fun readTweetArchive(requestReadArchive: RequestReadArchive) {
+    this.progressService.updateProgress(requestReadArchive.progressId, ProgressStatus.READ_START);
     var archiveType = this.getArchiveType(requestReadArchive);
     var tweetArrayList: ArrayList<Tweet>;
-    if (archiveType == ArchiveType.NORMAL) {
+    if (archiveType == ArchiveType.NORMAL_OLD) {
       tweetArrayList = this.readTweetArchiveTypeNormal(requestReadArchive);
     } else if (archiveType == ArchiveType.MEDIA) {
       tweetArrayList = this.readTweetArchiveTypeMedia(requestReadArchive);
     }
-    return this.progressService.findProgressById(requestReadArchive.progressId);
+    this.progressService.updateProgress(requestReadArchive.progressId, ProgressStatus.READ_END);
   }
 }
