@@ -5,6 +5,7 @@ import com.tweetbox.progress.dtos.ResponseProgressDto;
 import com.tweetbox.progress.entities.ProgressStatus;
 import com.tweetbox.progress.services.ProgressService;
 import com.tweetbox.rabbitmq.services.RabbitMQService;
+import com.tweetbox.reader.dtos.RequestReadArchive;
 import com.tweetbox.uploader.dtos.RequestCorrectFile;
 import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import lombok.SneakyThrows;
@@ -107,5 +108,6 @@ public class UploaderService {
       throw e;
     }
     this.progressService.updateProgress(requestUnZipDto.progressId(), ProgressStatus.UNZIP_END);
+    this.rabbitMQService.SendReadArchive(new RequestReadArchive(requestUnZipDto.userId(), requestUnZipDto.fileName(), requestUnZipDto.progressId()));
   }
 }

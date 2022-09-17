@@ -3,6 +3,7 @@ package com.tweetbox.rabbitmq.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tweetbox.logger.services.LoggerService;
+import com.tweetbox.reader.dtos.RequestReadArchive;
 import com.tweetbox.uploader.dtos.RequestUnZipDto;
 import com.tweetbox.uploader.services.UploaderService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,5 +22,9 @@ public class RabbitMQService {
 
   public void SendUnzip(RequestUnZipDto requestUnZipDto) {
     this.rabbitTemplate.convertAndSend("tweetbox.exchange.unzip", "", requestUnZipDto);
+  }
+
+  public void SendReadArchive(RequestReadArchive requestReadArchive){
+    this.rabbitTemplate.convertAndSend("tweetbox.exchange.read-archive", "", requestReadArchive);
   }
 }
