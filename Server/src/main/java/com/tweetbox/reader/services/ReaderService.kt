@@ -3,11 +3,11 @@ package com.tweetbox.reader.services
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.tweetbox.logger.services.LoggerService
-import com.tweetbox.progress.dtos.ResponseProgressDto
 import com.tweetbox.progress.entities.ProgressStatus
 import com.tweetbox.progress.services.ProgressService
 import com.tweetbox.reader.dtos.RequestReadArchive
-import com.tweetbox.tweet.data.Tweet
+import com.tweetbox.tweet.entities.Tweet
+import com.tweetbox.tweet.services.TweetService
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -16,7 +16,11 @@ import java.io.File
 import java.io.FileInputStream
 
 @Service
-class ReaderService(private var progressService: ProgressService, private var loggerService: LoggerService) {
+class ReaderService(
+  private var progressService: ProgressService,
+  private var loggerService: LoggerService,
+  private var tweetService: TweetService
+) {
   private val pathUploadFolder = "e:\\Upload\\";
   private val normalTypePath = "\\data\\js\\tweets";
   private val mediaTypeOffset = 25;
