@@ -18,8 +18,8 @@ public class ReaderController {
   }
 
 
-  @PostMapping("")
-  public ResponseProgressDto ReadTweetArchive(@RequestBody RequestReadArchive requestReadArchive) {
-    return this.readerService.readTweetArchive(requestReadArchive);
-  }
+//  @PostMapping("")
+//  public ResponseProgressDto ReadTweetArchive(@RequestBody RequestReadArchive requestReadArchive) {
+//    return this.readerService.readTweetArchive(requestReadArchive);
+//  }
 }
